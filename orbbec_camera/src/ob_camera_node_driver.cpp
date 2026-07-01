@@ -19,7 +19,7 @@
 #include <fcntl.h>
 #include <semaphore.h>
 #include <sys/shm.h>
-#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <ament_index_cpp/get_package_share_path.hpp>
 #include <ament_index_cpp/get_package_prefix.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 #include <rcutils/logging.h>
@@ -119,15 +119,26 @@ int rosLogSeverityFromString(const std::string_view &log_level) {
   }
   return RCUTILS_LOG_SEVERITY_UNSET;
 }
+
+std::string getOrbbecConfigPath() {
+  return (ament_index_cpp::get_package_share_path("orbbec_camera") / "config" /
+          "OrbbecSDKConfig_v2.0.xml")
+      .string();
+}
+
+std::string getOrbbecExtensionPath() {
+  std::filesystem::path package_prefix;
+  ament_index_cpp::get_package_prefix("orbbec_camera", package_prefix);
+  return (package_prefix / "lib" / "extensions").string();
+}
 }  // namespace
 
 OBCameraNodeDriver::OBCameraNodeDriver(const rclcpp::NodeOptions &node_options)
     : Node("orbbec_camera_node", "/", node_options),
       node_options_(node_options),
-      config_path_(ament_index_cpp::get_package_share_directory("orbbec_camera") +
-                   "/config/OrbbecSDKConfig_v2.0.xml"),
+      config_path_(getOrbbecConfigPath()),
       logger_(this->get_logger()),
-      extension_path_(ament_index_cpp::get_package_prefix("orbbec_camera") + "/lib/extensions") {
+      extension_path_(getOrbbecExtensionPath()) {
   node_name_ = "orbbec_camera_node";
   init();
 }
@@ -136,10 +147,9 @@ OBCameraNodeDriver::OBCameraNodeDriver(const std::string &node_name, const std::
                                        const rclcpp::NodeOptions &node_options)
     : Node(node_name, ns, node_options),
       node_options_(node_options),
-      config_path_(ament_index_cpp::get_package_share_directory("orbbec_camera") +
-                   "/config/OrbbecSDKConfig_v2.0.xml"),
+      config_path_(getOrbbecConfigPath()),
       logger_(this->get_logger()),
-      extension_path_(ament_index_cpp::get_package_prefix("orbbec_camera") + "/lib/extensions") {
+      extension_path_(getOrbbecExtensionPath()) {
   node_name_ = node_name;
   init();
 }
